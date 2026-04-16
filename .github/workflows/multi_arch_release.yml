@@ -34,7 +34,8 @@ on:
       ref:
         description: "TheRock branch, tag, or SHA. Empty = default branch."
         type: string
-        default: ""
+        # default: ""
+        default: "users/scotttodd/multi-arch-release-call"  # HACK: switch back to 'main' after testing
 
   # TODO(https://github.com/ROCm/TheRock/issues/3334): Enable schedule for
   # nightly releases once dev rel
@@ -53,7 +54,8 @@ run-name: >-
 
 jobs:
   release:
-    uses: ROCm/TheRock/.github/workflows/multi_arch_release.yml@main
+    # uses: ROCm/TheRock/.github/workflows/multi_arch_release.yml@main
+    uses: ROCm/TheRock/.github/workflows/multi_arch_release.yml@users/scotttodd/multi-arch-release-call  # HACK: switch back to 'main' after testing
     secrets: inherit
     with:
       release_type: ${{ inputs.release_type || 'nightly' }}
