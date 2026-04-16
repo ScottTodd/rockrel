@@ -60,8 +60,8 @@ jobs:
       prerelease_version: ${{ inputs.prerelease_version || '' }}
       linux_amdgpu_families: ${{ inputs.linux_amdgpu_families || 'all' }}
       windows_amdgpu_families: ${{ inputs.windows_amdgpu_families || 'all' }}
-      # TODO: pass ref (and have workflows handle it)
-      # ref: ${{ inputs.ref || '' }}
+      repository: "ROCm/TheRock"
+      ref: ${{ inputs.ref || '' }}
     permissions:
       contents: read
       actions: write
