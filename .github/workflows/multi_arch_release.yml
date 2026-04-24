@@ -38,7 +38,7 @@ on:
 
   # Trigger on a schedule to build nightly releases.
   schedule:
-    - cron: '0 20 * * *'  # DO NOT SUBMIT
+    - cron: '*/10 * * * *'  # DO NOT SUBMIT
 
 permissions:
   contents: read
