@@ -4,7 +4,7 @@
 
 set -euox pipefail
 
-BRANCH_NAME="release/bkc/therock-10.1-20260811"
+BRANCH_NAME="release/bkc/therock-10.1-20260825"
 SSH_PUSH_CONFIG="url.git@github.com:.pushInsteadOf=https://github.com/"
 REPOSITORY_PATHS=(
     "."
