@@ -116,3 +116,89 @@ For example, to branch from the nightly release with ROCm version
     git -C compiler/amd-llvm branch "${BRANCH_NAME}" && git -c "${SSH_PUSH_CONFIG}" -C compiler/amd-llvm push -u origin "${BRANCH_NAME}:${BRANCH_NAME}"
     git -C debug-tools/rocgdb/source branch "${BRANCH_NAME}" && git -c "${SSH_PUSH_CONFIG}" -C debug-tools/rocgdb/source push -u origin "${BRANCH_NAME}:${BRANCH_NAME}"
     ```
+
+## Initialize release branches
+
+After branch creation, some setup is required on each release branch to make it
+ready for release package building and testing pull requests.
+
+### (BKC only) Set the version base date in TheRock
+
+Set the version base date on BKC release branches in `version.json` like in
+[TheRock#7634](https://github.com/ROCm/TheRock/pull/7634):
+
+```diff
+{
+  "rocm-version": "10.1.0",
+  "release-metadata": {
+-   "base-date": ""
++   "base-date": "20260825"
+  }
+}
+```
+
+This is used to produce BKC versions like `10.1.0a20260825+bkc.20260831`
+(base date, current date). See
+https://github.com/ROCm/TheRock/blob/main/docs/packaging/versioning.md#release-branch-metadata
+for more details.
+
+### Pin workflow files in component repositories
+
+<!-- TODO: replace with stable release branch names not BKC? -->
+
+> [!WARNING]
+> Some of these changes are not obvious and may need careful review, as the CI
+> workflows have multiple configuration points.
+
+* Set workflow files in component repositories to use the release branch from
+  TheRock like in
+  [rocm-libraries#11772](https://github.com/ROCm/rocm-libraries/pull/11772) and
+  [rocm-systems#11301](https://github.com/ROCm/rocm-systems/pull/11301):
+
+    ```diff
+    outputs:
+      therock-ref:
+        description: "TheRock commit hash to use"
+    -   value: "b45a06045cbb29c85e221748e653ac2521c6e1bf" # 2026-08-26
+    +   value: "release/bkc/therock-10.1-20260908"
+    ```
+
+    ```diff
+            with:
+              repository: "ROCm/TheRock"
+              path: "TheRock"
+    -         ref: 648a501e56a1e0919976d6f540b7853e63d44998 # 2026-09-02
+    +         ref: release/bkc/therock-10.1-20260908
+    ```
+
+    This causes CI workflows triggered for pull requests to the release branches to
+    use workflow code and component code (e.g. LLVM, rocm-systems) from the release
+    branch.
+
+* Consider also disabling artifact reuse to ensure that CI builds provide the most
+  reliable signal:
+
+  ```diff
+      with:
+        build_native_linux: ${{ inputs.build_native_linux || false }}
+  -     # Enable automatic stage reuse - TheRock finds commit-compatible baselines
+  -     # and determines which stages to rebuild based on changed files
+  -     stage_reuse_mode: reuse-stage
+  +     # Disable automatic stage reuse for the pinned BKC branch.
+  +     stage_reuse_mode: off
+  ```
+
+### Pin workflow files in rockrel
+
+Set workflow files in rockrel to use the release branch from TheRock,
+like in [rockrel#112](https://github.com/ROCm/rockrel/pull/112):
+
+```diff
+  release:
+-   uses: ROCm/TheRock/.github/workflows/multi_arch_release.yml@main
++   uses: ROCm/TheRock/.github/workflows/multi_arch_release.yml@release/bkc/therock-10.1-20260908
+```
+
+This causes release workflows triggered from the release branch to use the
+release branch from TheRock instead of the latest code (used by default for
+nightly releases).
